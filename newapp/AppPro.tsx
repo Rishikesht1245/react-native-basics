@@ -9,13 +9,17 @@ import {
 } from "react-native";
  
 function AppPro(): React.JSX.Element {
+    // usecolorscheme returns the theme of the device
     const isDarkMode = useColorScheme() === 'dark';
 
     return (
         <SafeAreaView>
-            <View style={styles.container}>
-                <Text style={isDarkMode ? styles.darkText : styles.whiteText}>
-                    Hello world!
+            <View style ={styles.container}>
+                <Text style={isDarkMode ? styles.whiteText : styles.darkText}>
+                    Hello world!!!!
+                </Text>
+                <Text style={isDarkMode ? styles.whiteText : styles.darkText}>
+                    Hello world!!!!
                 </Text>
             </View>
         </SafeAreaView>
@@ -26,10 +30,11 @@ function AppPro(): React.JSX.Element {
 // styles is a binding of key value pairs
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
+        display : "flex",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: 'lightgrey', // Add a background color for debugging
+        backgroundColor: 'lightgrey',
+        gap:20
     },
     whiteText: {
         color: "#000000",
