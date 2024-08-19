@@ -31,17 +31,20 @@ export default function ContactList() {
   return (
     <View>
       <Text style ={styles.headingText}>ContactList</Text>
-      <ScrollView style={styles.container} horizontal={true}>
+      <View style={styles.container}>
         {
             contacts?.map(({name, number, status, imageUrl}) => (
                 <View key={name} style={styles.userCard}>
                     <Image style={styles.userImg} source={{uri : imageUrl}}/>
+                    <View>
+
                     <Text style={styles.userName}>{name}</Text>
                     <Text style={styles.userStatus}>{status}</Text>
+                    </View>
                 </View>
             ))
         }
-      </ScrollView>
+      </View>
     </View>
   )
 }
@@ -53,18 +56,20 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
     },
     container : {
-        display : "flex",
-        flexDirection : "row",
         marginVertical : 20,
+        flex : 1
     },
     userCard : {
         flex : 1,
-        justifyContent : "center",
+        flexDirection : "row",
+        justifyContent : "flex-start",
         alignItems : "center",
-        marginRight : 10,
+        gap : 10,
+        marginHorizontal :"auto",
+        marginVertical : 3,
         borderRadius : 10,
-        width : "100%",
-        backgroundColor : "white",
+        width : "90%",
+        backgroundColor : "#8d3daf",
         padding : 8
     },
     userImg : {
@@ -74,10 +79,12 @@ const styles = StyleSheet.create({
     },
     userName:{
         fontSize : 16,
-        fontWeight : "bold"
+        fontWeight : "bold",
+        color: "white"
     },
     userStatus: {
         fontSize : 14,
-        fontWeight : "400"
+        fontWeight : "400",
+        color : "white"
     }
 })
