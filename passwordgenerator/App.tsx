@@ -1,118 +1,212 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+import { Button, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import React, { useState } from 'react'
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+// Form Validation
+import * as Yup from "yup";
+import { Formik } from 'formik';
+import BouncyCheckbox from "react-native-bouncy-checkbox"
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+const passwordSchema = Yup.object().shape({
+  passwordLength: Yup.number()
+    .required()
+    .min(4, "Should be min of 4 characters")
+    .max(16, "Should be max of 16 characters"),
+})
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+export default function App() {
+
+  // variable and method to update this value.
+  const [password, setPassword] = useState("");
+
+  const [isPassGenerated, setIsPasswordGenerated] = useState(false);
+  const [upperCase, setUppserCase] = useState(false)
+  const [lowerCase, setLowerCase] = useState(true)
+  const [symbols, useSymbols] = useState(true)
+  const [numbers, useNumbers] = useState(false)
+
+  const generatePasswordString = (passwordLength: number) => {
+    // create the logic to generate password
+    let characterList = "";
+
+    const upperCaseChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const lowerCaseChars = "abcdefghijklmnopqrstuvwxyz";
+    const digitChars = '1234567890';
+    const specialChars = '!@#$%^&*()_+'
+
+    // combines the above strings conditionally according to the requirement
+    if (upperCase) {
+      characterList += upperCaseChars
+    }
+
+    if (lowerCase) {
+      characterList += lowerCaseChars
+    }
+
+    if (numbers) {
+      characterList += digitChars
+    }
+
+    if (symbols) {
+      characterList += specialChars
+    }
+
+    const passwordResult = createPassword(characterList, passwordLength);
+
+    setPassword(passwordResult);
+    setIsPasswordGenerated(true)
+
+  }
+
+
+  // return characters (based on uppercase lowercase)
+  const createPassword = (characters: string, passwordLength: number) => {
+    // creating the password
+    let result = "";
+
+    for (let i = 0; i < passwordLength; i++) {
+      const characterIndex = Math.round(Math.random() * characters.length);
+      // taking individual character from the string
+      result += characters.charAt(characterIndex);
+    }
+
+    return result;
+  }
+
+
+  const resetPassword = () => {
+    // resetting the state of the password
+    setPassword("");
+    setIsPasswordGenerated(false);
+    setLowerCase(true);
+    setUppserCase(false);
+    useNumbers(false);
+    useSymbols(false)
+  }
+
   return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+    // for handling keyboard tapping
+    <ScrollView keyboardShouldPersistTaps="handled">
+      <SafeAreaView style={styles.appContainer}>
+        <View style={styles.formContainer}>
+          <Text style={styles.header}>Password Generator</Text>
+          <Formik
+            initialValues={{ passwordLength: '' }}
+            validationSchema={passwordSchema}
+            onSubmit={({ passwordLength }, { setSubmitting }) => {
+              console.log({ passwordLength });
+              generatePasswordString(+passwordLength)
+            }}
+          >
+            {({ errors, touched, isValid, handleChange, handleSubmit, handleReset, values }) => {
+              return (
+                <>
+                  <View style={styles.inputWrapper}>
+                    <View style={styles.inputColumn}>
+                      <Text style={styles.header}>Password Length</Text>
+                      {/* Error messages */}
+                      {touched?.passwordLength && errors?.passwordLength && (
+                        <Text style={{ color: "red" }}>
+                          {errors.passwordLength}
+                        </Text>
+                      )}
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+                      {/* OnChnageText is used for handling text changes */}
+                      {/* Instead of name in HTML (we need to pass the name to handleChange function) */}
+                      <TextInput
+                        style={styles.inputStyle}
+                        value={values?.passwordLength}
+                        onChangeText={handleChange('passwordLength')}
+                        placeholder='Ex .8'
+                        keyboardType='numeric' />
+                    </View>
+                  </View>
+                  <View style={styles.inputWrapper}>
+                    <Text style={styles.header}>
+                      Include Lowercase
+                    </Text>
+                    <BouncyCheckbox isChecked={lowerCase} onPress={() => setLowerCase(!lowerCase)} fillColor='blue' />
+                  </View>
+                  <View style={styles.inputWrapper}>
+                    <BouncyCheckbox isChecked={upperCase} onPress={() => setUppserCase(!upperCase)} fillColor='blue' />
+                  </View>
+                  <View style={styles.inputWrapper}>
+                    <BouncyCheckbox isChecked={symbols} onPress={() => useSymbols(!symbols)} fillColor='blue' />
+                  </View>
+                  <View style={styles.inputWrapper}>
+                    <BouncyCheckbox isChecked={numbers} onPress={() => useNumbers(!numbers)} fillColor='blue' />
+                  </View>
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
+                  <View style={styles.formActions}>
+                    <TouchableOpacity disabled={!isValid} style={{backgroundColor : "blue"}} onPress={()=> handleSubmit}>
+                      <Text>Generate Password</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.secondaryBtn} onPress={() => {
+                      handleReset();
+                      resetPassword()
+                    }}><Text>Reset Password</Text></TouchableOpacity>
+                  </View>
+                </>
+              );
+            }}
+          </Formik>
 
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
+      
         </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
+        {isPassGenerated ? (
+            <View style={[styles?.card, styles?.cardElevated]}>
+              <Text style={styles.title}>Result</Text>
+              <Text style={styles.description}>Long Press to copy</Text>
+              {/* long press to copy or share */}
+              <Text selectable style={styles.generatedPassword}>{password}</Text>
+            </View>
+          ) : null}
+      </SafeAreaView>
+    </ScrollView>
+  )
 }
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  appContainer: {
+    flex: 1
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  formContainer: {
+    padding: 10,
+    flex: 1,
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
+  header: {
+    fontSize: 12,
+    fontWeight: "bold"
   },
-  highlight: {
-    fontWeight: '700',
+  inputWrapper: {
+    width: "100%"
   },
-});
+  formActions: {
+    flex: 1,
+    flexDirection: 'row'
+  },
+  inputColumn: {
+    flex: 1,
+    flexDirection: "row",
+    padding: 3,
+    backgroundColor: 'white'
+  },
+  inputStyle: {
+    color: "d33"
+  },
+  primaryButton:{
+    color : "blue"
+  },
+  secondaryBtn:{
 
-export default App;
+    backgroundColor : "grey",
+    color : "white"
+  },
+  card : {
+
+  },
+  title :{},
+  cardElevated : {},
+  description : {},
+  generatedPassword:{}
+})
