@@ -22,7 +22,7 @@ export default function App() {
   const [isPassGenerated, setIsPasswordGenerated] = useState(false);
   const [upperCase, setUppserCase] = useState(false)
   const [lowerCase, setLowerCase] = useState(true)
-  const [symbols, useSymbols] = useState(true)
+  const [symbols, useSymbols] = useState(false)
   const [numbers, useNumbers] = useState(false)
 
   const generatePasswordString = (passwordLength: number) => {
@@ -89,7 +89,7 @@ export default function App() {
     <ScrollView keyboardShouldPersistTaps="handled">
       <SafeAreaView style={styles.appContainer}>
         <View style={styles.formContainer}>
-          <Text style={styles.header}>Password Generator</Text>
+          <Text style={styles.header1}>Password Generator</Text>
           <Formik
             initialValues={{ passwordLength: '' }}
             validationSchema={passwordSchema}
@@ -101,16 +101,9 @@ export default function App() {
             {({ errors, touched, isValid, handleChange, handleSubmit, handleReset, values }) => {
               return (
                 <>
-                  <View style={styles.inputWrapper}>
+                  <View style={styles.inputBox}>
                     <View style={styles.inputColumn}>
-                      <Text style={styles.header}>Password Length</Text>
-                      {/* Error messages */}
-                      {touched?.passwordLength && errors?.passwordLength && (
-                        <Text style={{ color: "red" }}>
-                          {errors.passwordLength}
-                        </Text>
-                      )}
-
+                      <Text style={styles.header2}>Password Length</Text>
                       {/* OnChnageText is used for handling text changes */}
                       {/* Instead of name in HTML (we need to pass the name to handleChange function) */}
                       <TextInput
@@ -120,31 +113,47 @@ export default function App() {
                         placeholder='Ex .8'
                         keyboardType='numeric' />
                     </View>
+                        {/* Error messages */}
+                        {touched?.passwordLength && errors?.passwordLength && (
+                        <Text style={{ color: "red" }}>
+                          {errors.passwordLength}
+                        </Text>
+                      )}
+
                   </View>
                   <View style={styles.inputWrapper}>
-                    <Text style={styles.header}>
+                    <Text style={styles.header2}>
                       Include Lowercase
                     </Text>
                     <BouncyCheckbox isChecked={lowerCase} onPress={() => setLowerCase(!lowerCase)} fillColor='blue' />
                   </View>
                   <View style={styles.inputWrapper}>
+                    <Text style={styles.header2}>
+                      Include Uppercase
+                    </Text>
                     <BouncyCheckbox isChecked={upperCase} onPress={() => setUppserCase(!upperCase)} fillColor='blue' />
                   </View>
                   <View style={styles.inputWrapper}>
+                    <Text style={styles.header2}>
+                      Include Symbols
+                    </Text>
                     <BouncyCheckbox isChecked={symbols} onPress={() => useSymbols(!symbols)} fillColor='blue' />
                   </View>
                   <View style={styles.inputWrapper}>
+                    <Text style={styles.header2}>
+                      Include Numbers
+                    </Text>
                     <BouncyCheckbox isChecked={numbers} onPress={() => useNumbers(!numbers)} fillColor='blue' />
                   </View>
 
                   <View style={styles.formActions}>
-                    <TouchableOpacity disabled={!isValid} style={{backgroundColor : "blue"}} onPress={()=> handleSubmit}>
-                      <Text>Generate Password</Text>
+                    <TouchableOpacity disabled={!isValid} style={styles.primaryBtn} onPress={()=> handleSubmit()}>
+                      <Text style={{color : "white"}}>Generate Password</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.secondaryBtn} onPress={() => {
                       handleReset();
                       resetPassword()
-                    }}><Text>Reset Password</Text></TouchableOpacity>
+                    }}><Text style={{color : 'white'}}>Reset Password</Text></TouchableOpacity>
                   </View>
                 </>
               );
@@ -168,45 +177,88 @@ export default function App() {
 
 const styles = StyleSheet.create({
   appContainer: {
-    flex: 1
+    height : "100%",
+    flex: 1,
+    justifyContent : 'center'
   },
   formContainer: {
     padding: 10,
     flex: 1,
   },
-  header: {
-    fontSize: 12,
-    fontWeight: "bold"
+  header1: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginVertical : 10
+  },
+  header2 : {
+    fontSize : 16,
+    fontWeight : "bold"
+  },
+  inputBox:{
+    flex: 1,
+    gap : 8,
+    marginBottom : 10
   },
   inputWrapper: {
-    width: "100%"
+    width: "100%",
+    marginVertical : 8,
+    marginHorizontal : 10,
+    flex : 1,
+    flexDirection : 'row',
+    alignItems : "center",
+    gap : 10
   },
   formActions: {
     flex: 1,
-    flexDirection: 'row'
+    flexDirection: 'row',
+    gap : 10,
+    margin : 10
   },
   inputColumn: {
     flex: 1,
     flexDirection: "row",
-    padding: 3,
-    backgroundColor: 'white'
+    justifyContent : "space-between",
+    alignItems : "center",
+    paddingHorizontal: 8,
+    backgroundColor: '#e0e0e0'
   },
   inputStyle: {
     color: "d33"
   },
-  primaryButton:{
-    color : "blue"
+  primaryBtn:{
+    backgroundColor : "blue",
+    color : "#000000",
+    padding : 8
   },
   secondaryBtn:{
-
-    backgroundColor : "grey",
-    color : "white"
+    padding : 8,
+    backgroundColor : "green",
+    color : "red"
   },
   card : {
-
+    padding : 20,
+    backgroundColor : "white",
+    borderRadius : 10,
+    width : 400,
+    marginHorizontal : "auto"
   },
-  title :{},
-  cardElevated : {},
-  description : {},
-  generatedPassword:{}
+  title :{
+    textAlign : "center",
+    fontSize : 18,
+    fontWeight : 'bold',
+    textDecorationLine : "underline"
+  },
+  cardElevated : {
+    elevation : 3
+  },
+  description : {
+    fontWeight : "bold",
+    fontSize : 12,
+    textAlign : "center",
+    marginTop : 8
+  },
+  generatedPassword:{
+    textAlign : "center",
+    marginTop : 10
+  }
 })
