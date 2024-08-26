@@ -19,6 +19,9 @@ import {
 function App(): React.JSX.Element {
 
   const [randomBackground, setRandomBackground] = useState("#ffffff");
+  const [squareBackground, setSquareBackground] = useState("#ffffff");
+  const [circleBackground, setCircleBackground] = useState("#ffffff");
+  const [triBackground, setTriBackground] = useState("#ffffff");
 
   const generateColor = () => {
     // hex values range
@@ -31,7 +34,14 @@ function App(): React.JSX.Element {
       color += hexRange[random];
     }
 
-    setRandomBackground(color);
+    return color;
+  }
+
+  const handleColors = () => {
+   setRandomBackground(generateColor());
+   setCircleBackground(generateColor());
+   setSquareBackground(generateColor());
+   setTriBackground(generateColor())
   }
 
   return (
@@ -39,11 +49,22 @@ function App(): React.JSX.Element {
     {/* Status bar which shows the time network details on mobile screen */}
       <StatusBar backgroundColor={randomBackground} />
       <View style={[styles.container, {backgroundColor : randomBackground}]}>
-        <TouchableOpacity onPress={generateColor}>
+        {/* Reactangle and circle */}
+        <View style={[styles.rowContainer]}>
+          {/* rectangle */}
+          <View style={[styles.rectangle, {backgroundColor : squareBackground}]}/>
+          {/* circle */}
+            <View style={[styles.circle, {backgroundColor : circleBackground}]}/>
+        </View>
+        
+        <TouchableOpacity onPress={handleColors}>
           <View style={styles.actionBtn}>
             <Text style={styles.btnTxt}>Press me</Text>
           </View>
         </TouchableOpacity>
+
+        {/* Triangle */}
+        <View style ={[styles.triangle, {borderBottomColor : triBackground}]}/>
       </View>
     </>
   );
@@ -51,9 +72,18 @@ function App(): React.JSX.Element {
 
 const styles = StyleSheet.create({
 container : {
+  // flex 1 will takes the whole available space, display : flex won't take it.
   flex : 1,
   alignItems : "center",
-  justifyContent : "center"
+  justifyContent : "center",
+  gap :20,
+  maxHeight : "100%"
+},
+rowContainer:{
+  display :"flex",
+  flexDirection : "row",
+  alignItems : "center",
+  gap : 20
 },
 actionBtn: {
   borderRadius : 12,
@@ -65,7 +95,25 @@ btnTxt : {
   fontSize : 24,
   color : "white",
   textTransform : "uppercase",
-}
+},
+rectangle : {
+  width : 100,
+  height : 100
+},
+circle : {
+  width : 100,
+  height : 100,
+  borderRadius : 50
+},
+triangle: {
+  width: 0,
+  height: 0,
+  borderLeftWidth: 100,
+  borderRightWidth: 100,
+  borderBottomWidth: 100,
+  borderLeftColor: 'transparent',
+  borderRightColor: 'transparent',
+},
 });
 
 export default App;
