@@ -9,6 +9,14 @@ import DiceFour from "./assets/dice-4.png"
 import DiceFive from "./assets/dice-5.png"
 import DiceSix from "./assets/dice-6.png"
 
+import ReactNativeHapticFeedback from "react-native-haptic-feedback";
+
+// Optional configuration
+const options = {
+  enableVibrateFallback: true,
+  ignoreAndroidSystemSettings: false,
+};
+
 
 // props passing to dice component (type declaration)
 type DiceProps = PropsWithChildren<{
@@ -39,6 +47,8 @@ export default function App() {
       case 5 : return setDiceImage(DiceFive);
       case 6 : return setDiceImage(DiceSix);
     }
+
+    ReactNativeHapticFeedback.trigger("impactLight", options);
   }
   return (
     <View style={styles.container}>
