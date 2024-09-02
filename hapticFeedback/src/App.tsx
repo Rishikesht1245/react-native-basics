@@ -39,6 +39,7 @@ export default function App() {
 
   const rollDice = () => {
     const randomNumber = Math.floor(Math.random() * 6) + 1;
+    ReactNativeHapticFeedback.trigger("notificationSuccess", options);
     switch(randomNumber){
       case 1 : return setDiceImage(DiceOne);
       case 2 : return setDiceImage(DiceTwo);
@@ -48,7 +49,6 @@ export default function App() {
       case 6 : return setDiceImage(DiceSix);
     }
 
-    ReactNativeHapticFeedback.trigger("impactLight", options);
   }
   return (
     <View style={styles.container}>
