@@ -6,7 +6,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 export default function ControlCenter() {
   
   // Getting the playback state from the TrackPlayer
-  const playbackState = usePlaybackState();
+  const {state : playbackState} = usePlaybackState();
 
   // Next button
   const skipToNext = async () => {
@@ -27,12 +27,14 @@ export default function ControlCenter() {
   };
 
   // Toggle between play and pause
-  const togglePlayer = async (playback: State) => {
+  const togglePlayer = async (playback : any) => {
     const currentTrack = await TrackPlayer.getCurrentTrack();
     
     // Ensure there's a valid current track before attempting to play or pause
     if (currentTrack !== null) {
+      console.log("playing", playback, State.Ready)
       if (playback === State.Paused || playback === State.Ready) {
+        console.log("Playing")
         await TrackPlayer.play();
       } else if (playback === State.Playing) {
         await TrackPlayer.pause();

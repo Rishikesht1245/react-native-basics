@@ -11,9 +11,9 @@ export const playListData : Track[] = [
 },
     {
     id : 2,
-    title : "Song 2",
+    title : "Oru kathilola njan kandeela",
     artist : "MG Sreekumar",
-    album : "Movie 2",
+    album : "Vettom",
     artwork : require("./assets/images/two.jpg"),
     url : require("./assets/audio/two.mp3")
 },
