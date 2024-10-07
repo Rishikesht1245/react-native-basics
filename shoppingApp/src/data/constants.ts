@@ -1,4 +1,4 @@
-const products: Product[] = [
+export const products: Product[] = [
     {
       id: "1",
       name: "iPhone 16",

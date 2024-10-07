@@ -10,7 +10,7 @@ import Home from './screens/Home';
 import Details from './screens/Details';
 
 //RootStackParamsList
-type RootStackParamList = {
+export type RootStackParamList = {
   Home: undefined;
   Details: {product: Product};
 };

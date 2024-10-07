@@ -1,20 +1,14 @@
-import { Image, ScrollView, StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import {Image, StyleSheet, Text, View} from 'react-native';
+import React, {PropsWithChildren} from 'react';
 
-import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { RootStackParamList } from '../App'
+type ProductProps = PropsWithChildren<{
+  product: Product;
+}>;
 
-type DetailsProps = NativeStackScreenProps<RootStackParamList,'Details'>
-
-const Details = ({navigation, route} : DetailsProps) => {
-
-  const {product} = route.params;
-
+const ProductItem = ({product}: ProductProps) => {
   return (
-    <ScrollView style={styles.container}>
-      <View>
-        <Image style={styles.image} source={{uri : product.imageUrl}}/>
-      </View>
+    <View style={styles.container}>
+      <Image source={{uri: product?.imageUrl}} style={styles.image} />
 
       <View>
         <Text style={styles.name}>{product.name}</Text>
@@ -39,23 +33,15 @@ const Details = ({navigation, route} : DetailsProps) => {
             {product.offerPercentage.toLocaleString()}
           </Text>
         </View>
-        {product?.tags?.map((tag, index) => (
-          <View key={index}>
-            <Text>
-              {tag}
-            </Text>
-          </View>
-        ))}
       </View>
-    </ScrollView>
-  )
-}
+    </View>
+  );
+};
 
-export default Details
+export default ProductItem;
 
 const styles = StyleSheet.create({
   container: {
-    flex : 1,
     margin: 8,
     flexDirection: 'row',
   },
@@ -106,14 +92,4 @@ const styles = StyleSheet.create({
     backgroundColor: 'green',
     padding: 4,
   },
-  badges : {
-    backgroundColor : "#333",
-    padding : 5,
-    borderRadius : 5
-  },
-  badgeText : {
-    color : "#FFFFFF",
-    fontSize : 12,
-    fontWeight : 300,
-  }
 });
