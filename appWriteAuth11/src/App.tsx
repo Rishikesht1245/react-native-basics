@@ -1,11 +1,13 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
+import Router from './routes/Router'
+import { AppwriteProvider } from './appwrite/appwriteContext'
 
 const App = () => {
   return (
-    <View>
-      <Text>App</Text>
-    </View>
+    <AppwriteProvider>
+      <Router/>
+    </AppwriteProvider>
   )
 }
 

@@ -5,7 +5,6 @@ import React from 'react';
 
 import Home from '../screens/Home';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import {NavigationContainer} from '@react-navigation/native';
 
 // name and param list for routes
 export type AppStackParamList = {
@@ -17,7 +16,6 @@ const Stack = createNativeStackNavigator<AppStackParamList>();
 
 export default function AppStack() {
   return (
-    <NavigationContainer>
       <Stack.Navigator
         screenOptions={{
           headerTitleAlign: 'center',
@@ -25,7 +23,6 @@ export default function AppStack() {
         }}>
         <Stack.Screen name="Home" component={Home} options={{title: 'Home'}} />
       </Stack.Navigator>
-    </NavigationContainer>
   );
 }
 
