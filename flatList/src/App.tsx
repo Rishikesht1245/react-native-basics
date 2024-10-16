@@ -67,13 +67,17 @@ function App(): React.JSX.Element {
               onChangeText={setInputValue}
               keyboardType='number-pad'
               placeholder='Enter amount in Rupees'
+              style ={styles.input}
             />
           </View>
 
           {resultValue && (
+            <View style={styles.rupeeContainer}>
+             <Text style={styles.rupee}>Result Value</Text>
             <Text style={styles.resultText}>
               {resultValue}
             </Text>
+            </View>
           )}
         </View>
 
@@ -101,16 +105,51 @@ function App(): React.JSX.Element {
 
 const styles = StyleSheet.create({
   sectionContainer: {
-    marginTop: 32,
+    margin : 10,
+    display : "flex",
+    justifyContent : "center",
     paddingHorizontal: 24,
+    backgroundColor : "rgba(0,0,0,0.2)",
+    height : 'auto'
   },
-  topContianer: {},
-  rupee: {},
-  resultText: {},
-  bottomContainer: {},
-  rupeeContainer: {},
-  button: {},
-  selected: {},
+  topContianer: {
+    display : "flex",
+    flexDirection : 'row',
+    marginTop : 20,
+    gap : 10,
+    padding : 20,
+    backgroundColor : "rgba(0,0,0,0.3)"
+  },
+  rupee: {
+    display : 'flex',
+    flexDirection :'row'
+  },
+  input:{
+    backgroundColor: "#FFFFFF",
+    borderRadius : 5,
+    paddingVertical : 0
+  },
+  resultText: {
+    padding : 4,
+    backgroundColor: "#FFFFFF",
+    borderRadius : 5,
+  },
+  bottomContainer: {
+    display : 'flex',
+    flexDirection :'row',
+    gap : 20,
+    marginTop : 30
+  },
+  button: {
+    backgroundColor :'#FFFFFF',
+    width : 90,
+    height : 90,
+    margin : 10
+  },
+  selected: {
+    backgroundColor : 'rgba(0,0,0,0.4)'
+  },
+  rupeeContainer:{}
 });
 
 export default App;
