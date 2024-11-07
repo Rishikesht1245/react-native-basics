@@ -4,12 +4,10 @@ import {
   FlatList,
   Pressable,
   SafeAreaView,
-  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   TextInput,
-  useColorScheme,
   View,
 } from 'react-native';
 
@@ -91,8 +89,8 @@ function App(): React.JSX.Element {
             // the array that the flat list needs to go through
             data={currencies}
             // the key that the flat list need to take data : Unique
-            keyExtractor={item => item.name}
-            renderItem={({ item }) => (
+            keyExtractor={(item : Currency) => item.name}
+            renderItem={({ item }: {item : Currency}) => (
               // button
               <Pressable style={[styles.button, targetCurrency === item.name && styles.selected]} onPress={() => buttonPressed(item)}>
                 <CurrencyButton {...item} />
