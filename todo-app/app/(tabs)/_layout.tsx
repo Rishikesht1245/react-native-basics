@@ -13,6 +13,7 @@ export default function Layout() {
         options={{
           tabBarLabel: "Home",
           tabBarLabelStyle: { color: "#7CB9E8", fontSize:14, padding:1},
+          // will display the header
           headerShown: false,
           tabBarIcon: ({ focused }) =>
             focused ? (
