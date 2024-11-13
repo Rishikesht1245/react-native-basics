@@ -1,4 +1,5 @@
 import {
+  ImageBackground,
   KeyboardAvoidingView,
   Pressable,
   StyleSheet,
@@ -24,7 +25,12 @@ const login = () => {
   const router = useRouter();
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
+       <ImageBackground
+        source={require("../../assets/images/bg-img.jpeg")}
+        style={styles.backgroundImage}
+      >
+
       <View style={{ marginTop: 100 }}>
         <Text style={styles.heading}>To-Do List Tracker</Text>
       </View>
@@ -58,18 +64,18 @@ const login = () => {
 
             {/* keep me logged in and forgot password */}
             <View style={styles.forgotPasswordContainer}>
-              <View style={{ flexDirection: "row", gap: 4 }}>
+            <View style={{ flexDirection: "row", gap: 4, alignItems:"center" }}>
                 <Checkbox
-                  color="#007FFF"
+                  color="#555"
                   value={keepLoggedIn}
                   onValueChange={setKeepLoggedIn}
                 />
-                <Text style={{ fontWeight: "500", color: "gray" }}>
+                <Text style={{ fontWeight: "500", color: "#444" }}>
                   Keep me logged in
                 </Text>
               </View>
-              <Text style={{ color: "#66c", fontWeight: "500" }}>
-                Forgot Password ?
+              <Text style={{ color: "#66f", fontWeight: "500" }}>
+                Forgot Password?
               </Text>
             </View>
 
@@ -83,7 +89,8 @@ const login = () => {
           </View>
         </KeyboardAvoidingView>
       </GestureHandlerRootView>
-    </SafeAreaView>
+      </ImageBackground>
+    </View>
   );
 };
 
@@ -95,8 +102,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
     alignItems: "center",
   },
+  backgroundImage: {
+    flex: 1,
+    resizeMode: "cover",
+    alignItems : "center",
+  },
   heading: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "800",
     color: "#0066b2",
     textTransform: "uppercase",
@@ -106,7 +118,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginTop: 20,
     textAlign: "center",
-    color: "#66c",
+    color: "#000",
   },
   inputContianer: {
     flexDirection: "row",
@@ -117,6 +129,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 8,
     backgroundColor: "#eee",
+    shadowOffset :{
+      width : 5,
+      height : 5
+    },
+    borderWidth : 1,
+    borderColor : "#bbb"
   },
   input: {
     color: "grey",
