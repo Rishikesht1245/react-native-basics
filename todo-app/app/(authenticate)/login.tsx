@@ -1,4 +1,5 @@
 import {
+  Alert,
   ImageBackground,
   KeyboardAvoidingView,
   Pressable,
@@ -6,7 +7,7 @@ import {
   Text,
   View,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import {
@@ -16,6 +17,8 @@ import {
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import Checkbox from "expo-checkbox";
 import { useRouter } from "expo-router";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const login = () => {
   const [email, setEmail] = useState<string | undefined>("");
@@ -24,71 +27,109 @@ const login = () => {
 
   const router = useRouter();
 
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      try {
+        const token = await AsyncStorage.getItem("authToken");
+
+        if (token) return router.replace("/(tabs)/home");
+        return router.replace("/login");
+      } catch (error) {
+        console.log("Error :: ", error);
+      }
+    };
+
+    checkLoginStatus();
+  }, []);
+
+  const handleLogin = () => {
+    const user = {
+      email,
+      password,
+    };
+
+    axios
+      .post("http://192.168.20.7:3000/api-v1/auth/login", user)
+      .then((response) => {
+        const token = response.data.token;
+        AsyncStorage.setItem("authToken", token);
+        Alert.alert("Login Successful", "You have been logged in successfully");
+        setEmail("");
+        setPassword("");
+        router.replace("/(tabs)/home");
+      })
+      .catch((error) => {
+        Alert.alert("Login Failed");
+        console.log("Error ::", error);
+      });
+  };
+
   return (
     <View style={styles.container}>
-       <ImageBackground
+      <ImageBackground
         source={require("../../assets/images/bg-img.jpeg")}
         style={styles.backgroundImage}
       >
-
-      <View style={{ marginTop: 100 }}>
-        <Text style={styles.heading}>To-Do List Tracker</Text>
-      </View>
-      <GestureHandlerRootView>
-        <KeyboardAvoidingView>
-          <View style={{ alignItems: "center" }}>
-            <Text style={styles.title}>Log in to your account</Text>
-          </View>
-
-          {/* Inputs */}
-          <View style={{ marginTop: 70, gap: 30, marginHorizontal: 10 }}>
-            <View style={styles.inputContianer}>
-              <MaterialIcons name="email" size={28} color="grey" />
-              <TextInput
-                placeholder="Enter your email"
-                style={styles.input}
-                value={email}
-                onChangeText={(text) => setEmail(text)}
-              />
-            </View>
-            <View style={styles.inputContianer}>
-              <FontAwesome name="lock" size={30} color="grey" />
-              <TextInput
-                value={password}
-                onChangeText={(text) => setPassword(text)}
-                placeholder="Enter your password"
-                style={styles.input}
-                secureTextEntry={true}
-              />
+        <View style={{ marginTop: 100 }}>
+          <Text style={styles.heading}>To-Do List Tracker</Text>
+        </View>
+        <GestureHandlerRootView>
+          <KeyboardAvoidingView>
+            <View style={{ alignItems: "center" }}>
+              <Text style={styles.title}>Log in to your account</Text>
             </View>
 
-            {/* keep me logged in and forgot password */}
-            <View style={styles.forgotPasswordContainer}>
-            <View style={{ flexDirection: "row", gap: 4, alignItems:"center" }}>
-                <Checkbox
-                  color="#555"
-                  value={keepLoggedIn}
-                  onValueChange={setKeepLoggedIn}
+            {/* Inputs */}
+            <View style={{ marginTop: 70, gap: 30, marginHorizontal: 10 }}>
+              <View style={styles.inputContianer}>
+                <MaterialIcons name="email" size={28} color="grey" />
+                <TextInput
+                  placeholder="Enter your email"
+                  style={styles.input}
+                  value={email}
+                  onChangeText={(text) => setEmail(text)}
                 />
-                <Text style={{ fontWeight: "500", color: "#444" }}>
-                  Keep me logged in
+              </View>
+              <View style={styles.inputContianer}>
+                <FontAwesome name="lock" size={30} color="grey" />
+                <TextInput
+                  value={password}
+                  onChangeText={(text) => setPassword(text)}
+                  placeholder="Enter your password"
+                  style={styles.input}
+                  secureTextEntry={true}
+                />
+              </View>
+
+              {/* keep me logged in and forgot password */}
+              <View style={styles.forgotPasswordContainer}>
+                <View
+                  style={{ flexDirection: "row", gap: 4, alignItems: "center" }}
+                >
+                  <Checkbox
+                    color="#555"
+                    value={keepLoggedIn}
+                    onValueChange={setKeepLoggedIn}
+                  />
+                  <Text style={{ fontWeight: "500", color: "#444" }}>
+                    Keep me logged in
+                  </Text>
+                </View>
+                <Text style={{ color: "#66f", fontWeight: "500" }}>
+                  Forgot Password?
                 </Text>
               </View>
-              <Text style={{ color: "#66f", fontWeight: "500" }}>
-                Forgot Password?
-              </Text>
-            </View>
 
-            {/* Login Button */}
-            <Pressable style={styles.btn}>
-              <Text style={styles.btnTxt}>Login</Text>
-            </Pressable>
-            <Pressable onPress={() => router.replace("/register")}>
-              <Text style={styles.title}>Don't have an account? Sing up</Text>
-            </Pressable>
-          </View>
-        </KeyboardAvoidingView>
-      </GestureHandlerRootView>
+              {/* Login Button */}
+              <Pressable style={styles.btn} onPress={() => handleLogin()}>
+                <Text style={styles.btnTxt}>Login</Text>
+              </Pressable>
+              <Pressable onPress={() => router.replace("/register")}>
+                <Text style={styles.title}>Don't have an account? Sing up</Text>
+              </Pressable>
+            </View>
+          </KeyboardAvoidingView>
+        </GestureHandlerRootView>
       </ImageBackground>
     </View>
   );
@@ -105,7 +146,7 @@ const styles = StyleSheet.create({
   backgroundImage: {
     flex: 1,
     resizeMode: "cover",
-    alignItems : "center",
+    alignItems: "center",
   },
   heading: {
     fontSize: 28,
@@ -129,12 +170,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 8,
     backgroundColor: "#eee",
-    shadowOffset :{
-      width : 5,
-      height : 5
+    shadowOffset: {
+      width: 5,
+      height: 5,
     },
-    borderWidth : 1,
-    borderColor : "#bbb"
+    borderWidth: 1,
+    borderColor: "#bbb",
   },
   input: {
     color: "grey",

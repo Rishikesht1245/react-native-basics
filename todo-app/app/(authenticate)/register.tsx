@@ -1,4 +1,5 @@
 import {
+  Alert,
   Image,
   ImageBackground,
   KeyboardAvoidingView,
@@ -17,6 +18,7 @@ import {
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import Checkbox from "expo-checkbox";
 import { useRouter } from "expo-router";
+import axios from "axios";
 
 const Register = () => {
   const [email, setEmail] = useState<string>("");
@@ -24,6 +26,25 @@ const Register = () => {
   const [name, setName] = useState<string>("");
 
   const router = useRouter();
+
+  const handleRegister = () => {
+    const user = {
+      name,
+      email,
+      password
+    }
+
+    axios.post('http://192.168.20.7:3000/api-v1/auth/register', user).then((response) => {
+      Alert.alert("Registration Successful", "You have been registered successfully");
+      setEmail("");
+      setPassword("");
+      setName("");
+      router.replace("/login")
+    }).catch((error) => {
+      Alert.alert("Registration Failed");
+      console.log("Error ::", error)
+    })
+  }
 
   return (
     <View style={styles.container}>
@@ -43,7 +64,7 @@ const Register = () => {
             {/* Inputs */}
             <View style={{ marginTop: 70, gap: 30, marginHorizontal: 10 }}>
             <View style={styles.inputContianer}>
-                <MaterialIcons name="supervised-user-circle" size={28} color="grey" />
+                <MaterialIcons name="account-circle" size={28} color="grey" />
                 <TextInput
                   placeholder="Enter your name"
                   style={styles.input}
@@ -72,7 +93,7 @@ const Register = () => {
               </View>
 
               {/* Register Button */}
-              <Pressable style={styles.btn}>
+              <Pressable style={styles.btn} onPress={() => handleRegister()}>
                 <Text style={styles.btnTxt}>Register</Text>
               </Pressable>
               <Pressable onPress={() => router.replace("/login")}>

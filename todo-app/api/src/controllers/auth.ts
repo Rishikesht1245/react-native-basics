@@ -12,6 +12,7 @@ export const registerUser = async (
   next: NextFunction
 ) => {
   try {
+    console.log("R")
     const { name, email, password } = req.body;
 
     if (!name || !email || !password)

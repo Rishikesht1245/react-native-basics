@@ -4,8 +4,7 @@ import mongoose from "mongoose";
 import crypto from "crypto";
 import cors from "cors";
 import { configDotenv } from "dotenv";
-import { error } from "console";
-
+import {AuthRouter} from "./routes/authenticate"
 const app = express();
 const port = 3000;
 configDotenv();
@@ -17,11 +16,17 @@ app.use(bodyParser.json());
 
 const MONGO_URI = process.env.MONGO_URI;
 mongoose
-  .connect(MONGO_URI)
+  .connect(MONGO_URI as string)
   .then(() => {
     console.log("Mongo DB connected successfully");
   })
   .catch((error) => console.log("Error in connecting mongo DB", error));
+
+  app.use("/api-v1/auth", AuthRouter)
+
+  app.get("/test", (req, res) => {
+    res.status(200).send("hello")
+  })
 
 
   app.listen(port, () => {
