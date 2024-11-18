@@ -1,35 +1,97 @@
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+} from "react-native";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import {
   GestureHandlerRootView,
   ScrollView,
 } from "react-native-gesture-handler";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import {
+  BottomModal,
+  ModalContent,
+  ModalTitle,
+  SlideAnimation,
+} from "react-native-modals";
+import { Ionicons } from "@expo/vector-icons";
 const index = () => {
   const todos = useMemo(() => [], []);
+
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const [todo, setTodo] = useState<string>("");
+
+  const todoSuggestions = [
+    {
+      id: 1,
+      title: "Go to Gym",
+      category: "Personal",
+      completed: false,
+    },
+    {
+      id: 2,
+      title: "Finish the React",
+      category: "Work",
+      completed: false,
+    },
+    {
+      id: 3,
+      title: "Read a book",
+      category: "Personal",
+      completed: true,
+    },
+    {
+      id: 4,
+      title: "Organize workspace",
+      category: "Work",
+      completed: false,
+    },
+    {
+      id: 5,
+      title: "Call Mom and Dad",
+      category: "Personal",
+      completed: false,
+    },
+    {
+      id: 6,
+      title: "Go to bed early",
+      category: "Personal",
+      completed: false,
+    },
+  ];
+
   return (
     <>
       {/* Buttons : filter and add */}
-      <View style={styles.container}>
-        <Pressable style={[styles.btn, styles.bg_blue]}>
-          <Text style={styles.text}>All</Text>
-        </Pressable>
-        <Pressable style={[styles.btn, styles.bg_red]}>
-          <Text style={styles.text}>Work</Text>
-        </Pressable>
-        <Pressable
-          style={[styles.btn, styles.bg_green, { marginRight: "auto" }]}
-        >
-          <Text style={styles.text}>Personal</Text>
-        </Pressable>
-        {/* add button */}
-        <Pressable style={[styles.btn]}>
-          <AntDesign name="pluscircle" size={32} color="#007FFF" />
-        </Pressable>
-      </View>
-
-      {/* Scroll View : Todo Scrolling */}
       <GestureHandlerRootView>
+        <View style={styles.container}>
+          <Pressable style={[styles.btn, styles.bg_blue]}>
+            <Text style={styles.text}>All</Text>
+          </Pressable>
+          <Pressable style={[styles.btn, styles.bg_red]}>
+            <Text style={styles.text}>Work</Text>
+          </Pressable>
+          <Pressable
+            style={[styles.btn, styles.bg_green, { marginRight: "auto" }]}
+          >
+            <Text style={styles.text}>Personal</Text>
+          </Pressable>
+          {/* add button */}
+          <Pressable style={[styles.btn]}>
+            <AntDesign
+              name="pluscircle"
+              size={32}
+              color="#007FFF"
+              onPress={() => setModalOpen(!modalOpen)}
+            />
+          </Pressable>
+        </View>
+
+        {/* Scroll View : Todo Scrolling */}
         <ScrollView style={styles.todo_container}>
           {todos?.length > 0 ? (
             <View>Todos</View>
@@ -46,11 +108,63 @@ const index = () => {
                 No Tasks for today! add a task
               </Text>
               <Pressable style={[styles.btn]}>
-                <AntDesign name="pluscircle" size={40} color="#007FFF" />
+                <AntDesign
+                  onPress={() => setModalOpen(!modalOpen)}
+                  name="pluscircle"
+                  size={40}
+                  color="#007FFF"
+                />
               </Pressable>
             </View>
           )}
         </ScrollView>
+        <BottomModal
+          onHardwareBackPress={() => setModalOpen(!modalOpen)!}
+          visible={modalOpen}
+          swipeDirection={["up", "down"]}
+          swipeThreshold={200}
+          modalTitle={<ModalTitle title="Add a Todo" />}
+          modalAnimation={
+            new SlideAnimation({
+              slideFrom: "bottom",
+            })
+          }
+          onTouchOutside={() => setModalOpen(!modalOpen)}
+        >
+          <ModalContent style={styles.modalContent}>
+            <View style={styles.modalView}>
+              <TextInput
+                placeholder="Enter your todo"
+                onChangeText={(text) => setTodo(text)}
+                style={styles.modalInput}
+              />
+              <Ionicons name="send" size={24} color="#007FFF" />
+            </View>
+            <View>
+              <Text>Choose Category</Text>
+              <View style={styles.modalCatContainer}>
+                <Pressable style={styles.modalCategory}>
+                  <Text style={styles.modalCatText}>Work</Text>
+                </Pressable>
+                <Pressable style={styles.modalCategory}>
+                  <Text style={styles.modalCatText}>Personal</Text>
+                </Pressable>
+                <Pressable style={styles.modalCategory}>
+                  <Text style={styles.modalCatText}>Wishlist</Text>
+                </Pressable>
+              </View>
+
+              <Text>Some Suggestions</Text>
+              <View style={styles.modalSuggestionsContainer}>
+                {todoSuggestions?.map((suggestion) => (
+                  <Pressable style={styles.modalSuggestions} key={suggestion.id}>
+                    <Text style={{textAlign : "center"}}>{suggestion?.title}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+          </ModalContent>
+        </BottomModal>
       </GestureHandlerRootView>
     </>
   );
@@ -60,8 +174,8 @@ export default index;
 
 const styles = StyleSheet.create({
   container: {
-    margin: 10,
     flexDirection: "row",
+    margin: 10,
     alignItems: "center",
     gap: 5,
   },
@@ -112,5 +226,52 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     marginTop: 10,
+  },
+
+  modalContent: {
+    width: "100%",
+    height: 300,
+  },
+  modalView: {
+    marginVertical: 15,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  modalInput: {
+    flex: 1,
+    padding: 10,
+    borderColor: "#E0E0E0",
+    borderWidth: 1,
+    borderRadius: 5,
+  },
+  modalCatContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginVertical: 10,
+  },
+  modalCategory: {
+    borderColor: "#E0E0E0",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderRadius: 5,
+  },
+  modalCatText: {
+    fontSize: 14,
+  },
+  modalSuggestionsContainer : {
+    flexDirection : "row",
+    alignItems : 'center',
+    flexWrap :'wrap',
+    gap :10,
+    marginVertical : 15
+  },
+  modalSuggestions: {
+    backgroundColor : "#F0F8FF",
+    paddingHorizontal : 10,
+    paddingVertical : 4,
+    borderRadius : 25,
   },
 });

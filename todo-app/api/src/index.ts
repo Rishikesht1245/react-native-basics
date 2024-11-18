@@ -22,7 +22,7 @@ mongoose
   })
   .catch((error) => console.log("Error in connecting mongo DB", error));
 
-  app.use("/api-v1/auth", AuthRouter)
+  app.use("/api-v1/auth", AuthRouter);
 
   app.get("/test", (req, res) => {
     res.status(200).send("hello")

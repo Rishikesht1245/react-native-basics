@@ -33,7 +33,6 @@ const login = () => {
         const token = await AsyncStorage.getItem("authToken");
 
         if (token) return router.replace("/(tabs)/home");
-        return router.replace("/login");
       } catch (error) {
         console.log("Error :: ", error);
       }
@@ -49,7 +48,7 @@ const login = () => {
     };
 
     axios
-      .post("http://192.168.20.7:3000/api-v1/auth/login", user)
+      .post("http://192.168.20.4:3000/api-v1/auth/login", user)
       .then((response) => {
         const token = response.data.token;
         AsyncStorage.setItem("authToken", token);
