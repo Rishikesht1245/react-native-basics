@@ -5,13 +5,14 @@ import {
   Text,
   View,
   TextInput,
+  Alert,
 } from "react-native";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import {
   GestureHandlerRootView,
   ScrollView,
 } from "react-native-gesture-handler";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   BottomModal,
   ModalContent,
@@ -19,11 +20,17 @@ import {
   SlideAnimation,
 } from "react-native-modals";
 import { Ionicons } from "@expo/vector-icons";
+import axios from "axios";
+import { API_URL } from "@/config";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 const index = () => {
-  const todos = useMemo(() => [], []);
 
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [todo, setTodo] = useState<string>("");
+  const [category, setCategory] = useState<string>("");
+
+  const [todos, setTodos] = useState([]);
+  const [filteredTodos, setFilteredTodos] = useState([]);
 
   const todoSuggestions = [
     {
@@ -63,6 +70,61 @@ const index = () => {
       completed: false,
     },
   ];
+
+  const addTodo = async () => {
+    try {
+      const todoData = {
+        title : todo,
+        category : category
+      }
+
+      const token = await AsyncStorage.getItem("authToken");
+      const uservalue = await AsyncStorage.getItem("user");
+      const user = uservalue != null ? JSON.parse(uservalue) : null;
+
+     const response = await axios.post(`${API_URL}/todos/${user._id}`, todoData, {
+        headers : {
+          AUTH_TOKEN : token
+        }
+      });
+
+      if(response.status !== 201){
+        Alert.alert("Failed to add the todo", response?.data?.error || "Something went wrong");
+      }
+
+      Alert.alert("Success", "Todo added successfully.");
+
+    } catch (error) {
+      console.log("Error in adding TODO :: ", error);
+    }
+  }
+
+  const getUserTods = async () => {
+    try {
+      const token = await AsyncStorage.getItem("authToken");
+      const uservalue = await AsyncStorage.getItem("user");
+      const user = uservalue != null ? JSON.parse(uservalue) : null;
+
+      const response = await axios.get(`${API_URL}/todo/${user._id}`, {
+        headers : {
+          AUTH_TOKEN : token,
+        }
+      });
+
+      if(response.status !== 200){
+        Alert.alert("Failed to fetch todos", response?.data?.error || "Something went wrong");
+      }
+
+      setTodos(response?.data?.todos)
+    } catch (error) {
+      console.log("Error in fetching todos :: ", error)
+    }
+  }
+
+  useEffect(() => {
+    getUserTods();
+  }, [])
+  
 
   return (
     <>
@@ -138,18 +200,18 @@ const index = () => {
                 onChangeText={(text) => setTodo(text)}
                 style={styles.modalInput}
               />
-              <Ionicons name="send" size={24} color="#007FFF" />
+              <Ionicons name="send" size={24} color="#007FFF" onPress={() => addTodo()}/>
             </View>
             <View>
               <Text>Choose Category</Text>
               <View style={styles.modalCatContainer}>
-                <Pressable style={styles.modalCategory}>
+                <Pressable style={styles.modalCategory} onPress={() => setCategory("work")}>
                   <Text style={styles.modalCatText}>Work</Text>
                 </Pressable>
-                <Pressable style={styles.modalCategory}>
+                <Pressable style={styles.modalCategory} onPress={() => setCategory("personal")}>
                   <Text style={styles.modalCatText}>Personal</Text>
                 </Pressable>
-                <Pressable style={styles.modalCategory}>
+                <Pressable style={styles.modalCategory} onPress={() => setCategory("wishlist")}>
                   <Text style={styles.modalCatText}>Wishlist</Text>
                 </Pressable>
               </View>

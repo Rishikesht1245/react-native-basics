@@ -5,6 +5,7 @@ import crypto from "crypto";
 import cors from "cors";
 import { configDotenv } from "dotenv";
 import {AuthRouter} from "./routes/authenticate"
+import todoRouter from "./routes/todo";
 const app = express();
 const port = 3000;
 configDotenv();
@@ -23,6 +24,8 @@ mongoose
   .catch((error) => console.log("Error in connecting mongo DB", error));
 
   app.use("/api-v1/auth", AuthRouter);
+
+  app.use("api-v1/todos", todoRouter)
 
   app.get("/test", (req, res) => {
     res.status(200).send("hello")

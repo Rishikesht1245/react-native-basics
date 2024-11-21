@@ -19,6 +19,7 @@ import Checkbox from "expo-checkbox";
 import { useRouter } from "expo-router";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "@/config";
 
 const login = () => {
   const [email, setEmail] = useState<string | undefined>("");
@@ -48,10 +49,11 @@ const login = () => {
     };
 
     axios
-      .post("http://192.168.20.4:3000/api-v1/auth/login", user)
+      .post(`${API_URL}/auth/login`, user)
       .then((response) => {
-        const token = response.data.token;
+        const {token, user} = response.data;
         AsyncStorage.setItem("authToken", token);
+        AsyncStorage.setItem("user", JSON.stringify(user));
         Alert.alert("Login Successful", "You have been logged in successfully");
         setEmail("");
         setPassword("");

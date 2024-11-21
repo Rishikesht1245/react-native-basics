@@ -1,10 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import Users from "../models/user";
 import jwt from "jsonwebtoken"
-import crypto from "crypto"
-
-const generateSecretKey = () =>  crypto.randomBytes(32).toString("hex");
-export const secretKey = generateSecretKey();
 
 export const registerUser = async (
   req: Request,
@@ -43,13 +39,13 @@ export const loginUser = async (
     if (!email || !password)
       throw new Error("Required fields are not provided");
 
-    const user = await Users.findOne({ email });
+    const user = await Users.findOne({ email }).select({password : -1});
 
     if (!user) throw new Error("Invalid Email");
 
     if (user.password !== password) throw new Error("Invalid Password");
 
-    const token = jwt.sign({userId : user._id}, secretKey);
+    const token = jwt.sign({userId : user._id}, process.env.JWT_SECRET!);
 
     res.status(200).json({user, token});
 
