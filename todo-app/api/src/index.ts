@@ -25,7 +25,7 @@ mongoose
 
   app.use("/api-v1/auth", AuthRouter);
 
-  app.use("api-v1/todos", todoRouter)
+  app.use("/api-v1/todos", todoRouter)
 
   app.get("/test", (req, res) => {
     res.status(200).send("hello")

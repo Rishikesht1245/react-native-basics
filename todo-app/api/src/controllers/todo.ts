@@ -8,10 +8,10 @@ export const addTodo = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { title, category, dueDate } = req.body;
+    const { title, category, dueDate = new Date(new Date().getDate() + 1) } = req.body;
     const { userId } = req.params;
 
-    if (!title || !category || !dueDate || !userId) {
+    if (!title || !category || !userId) {
       res.status(400).json({ message: "Required Params are not provided" });
       return;
     }

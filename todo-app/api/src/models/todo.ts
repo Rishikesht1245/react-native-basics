@@ -14,7 +14,7 @@ const todoSchema = new mongoose.Schema<ITodo>(
       },
       category: {
         type: String,
-        enum : ["all", "work", "personal"],
+        enum : ["all", "work", "personal", "wishlist"],
         default : "all"
       },
       dueDate : {

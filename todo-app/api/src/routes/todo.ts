@@ -12,7 +12,7 @@ todoRouter
 todoRouter.patch("/:userId/:todoId", isAuth, completeTodo);
 
 function isAuth(req: Request, res: Response, next: NextFunction): void {
-  const token = req.headers["AUTH_TOKEN"];
+  const token = req.headers["auth_token"];
 
   if (!token) {
     res.status(401).json({ message: "Unauthorized user" });

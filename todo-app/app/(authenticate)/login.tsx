@@ -28,11 +28,12 @@ const login = () => {
 
   const router = useRouter();
 
+  
+
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
         const token = await AsyncStorage.getItem("authToken");
-
         if (token) return router.replace("/(tabs)/home");
       } catch (error) {
         console.log("Error :: ", error);

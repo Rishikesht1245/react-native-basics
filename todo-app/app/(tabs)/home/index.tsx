@@ -23,14 +23,29 @@ import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import { API_URL } from "@/config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-const index = () => {
+import Entypo from "@expo/vector-icons/Entypo";
+import Feather from "@expo/vector-icons/Feather";
+import { ITodo } from "@/interfaces";
 
+const index = () => {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [todo, setTodo] = useState<string>("");
   const [category, setCategory] = useState<string>("");
 
   const [todos, setTodos] = useState([]);
-  const [filteredTodos, setFilteredTodos] = useState([]);
+  const [pendingTodos, setPendingTodos] = useState([]);
+  const [completedTodos, setCompletedTodos] = useState([]);
+  const [marked, setMarked] = useState<boolean>(false);
+
+  const today = new Date().toDateString();
+
+  const fetchUserDetails = async () => {
+    const token = await AsyncStorage.getItem("authToken");
+    const uservalue = await AsyncStorage.getItem("user");
+    const user = uservalue != null ? JSON.parse(uservalue) : null;
+
+    return { token, user };
+  };
 
   const todoSuggestions = [
     {
@@ -74,57 +89,96 @@ const index = () => {
   const addTodo = async () => {
     try {
       const todoData = {
-        title : todo,
-        category : category
-      }
+        title: todo,
+        category: category,
+      };
 
-      const token = await AsyncStorage.getItem("authToken");
-      const uservalue = await AsyncStorage.getItem("user");
-      const user = uservalue != null ? JSON.parse(uservalue) : null;
+      const { token, user } = await fetchUserDetails();
 
-     const response = await axios.post(`${API_URL}/todos/${user._id}`, todoData, {
-        headers : {
-          AUTH_TOKEN : token
+      const response = await axios.post(
+        `${API_URL}/todos/${user._id}`,
+        todoData,
+        {
+          headers: {
+            AUTH_TOKEN: token,
+          },
         }
-      });
+      );
 
-      if(response.status !== 201){
-        Alert.alert("Failed to add the todo", response?.data?.error || "Something went wrong");
+      if (response.status !== 201) {
+        Alert.alert(
+          "Failed to add the todo",
+          response?.data?.error || "Something went wrong"
+        );
       }
 
       Alert.alert("Success", "Todo added successfully.");
-
-    } catch (error) {
+      setModalOpen(false);
+      setTodo("");
+    } catch (error: any) {
       console.log("Error in adding TODO :: ", error);
+      Alert.alert(
+        "Failed to add the todo",
+        error?.message || "Something went wrong"
+      );
     }
-  }
+  };
 
   const getUserTods = async () => {
     try {
-      const token = await AsyncStorage.getItem("authToken");
-      const uservalue = await AsyncStorage.getItem("user");
-      const user = uservalue != null ? JSON.parse(uservalue) : null;
-
-      const response = await axios.get(`${API_URL}/todo/${user._id}`, {
-        headers : {
-          AUTH_TOKEN : token,
-        }
+      const { token, user } = await fetchUserDetails();
+      const todo_url = `${API_URL}/todos/${user._id}`;
+      const response = await axios.get(todo_url, {
+        headers: {
+          auth_token: token,
+        },
       });
 
-      if(response.status !== 200){
-        Alert.alert("Failed to fetch todos", response?.data?.error || "Something went wrong");
-      }
+      if (response.status === 200) {
+        setTodos(response?.data?.todos);
 
-      setTodos(response?.data?.todos)
-    } catch (error) {
-      console.log("Error in fetching todos :: ", error)
+        const allTodos = response.data.todos;
+        const pending = allTodos.filter(
+          (todo: { title: string; status: string }) =>
+            todo.status !== "completed"
+        );
+        const completed = allTodos.filter(
+          (todo: { title: string; status: string }) => todo.status !== "pending"
+        );
+        setPendingTodos(pending);
+        setCompletedTodos(completed);
+      }
+    } catch (error: any) {
+      console.log("Error in fetching todos :: ", error);
+      Alert.alert(
+        "Failed to fetch todos",
+        error?.message || "Something went wrong."
+      );
     }
-  }
+  };
 
   useEffect(() => {
     getUserTods();
-  }, [])
-  
+  }, []);
+
+  const handleCompleteTodo = async (todoId: string) => {
+    const { token, user } = await fetchUserDetails();
+
+    setMarked(true);
+    const response = await axios.patch(
+      `${API_URL}/todos/${user._id}/${todoId}`,
+      "",
+      {
+        headers: {
+          AUTH_TOKEN: token,
+        },
+      }
+    );
+
+    if (response?.status === 200) {
+      Alert.alert("Todo Marked as completed");
+    }
+  };
 
   return (
     <>
@@ -156,7 +210,35 @@ const index = () => {
         {/* Scroll View : Todo Scrolling */}
         <ScrollView style={styles.todo_container}>
           {todos?.length > 0 ? (
-            <View>Todos</View>
+            <View>
+              {pendingTodos?.length > 0 && (
+                <Text style={styles.todoHeading}>Tasks To Do {today}</Text>
+              )}
+
+              {pendingTodos?.map((todo: ITodo) => (
+                <Pressable key={todo?._id} style={styles.todoButton}>
+                  <View style={styles.todoItem}>
+                    <Entypo name="circle" size={18} color="black" />
+                    <Text style={styles.todoText}>{todo?.title}</Text>
+                    <Feather name="flag" size={20} color="black" />
+                  </View>
+                </Pressable>
+              ))}
+
+              {completedTodos?.length > 0 && (
+                <Text style={styles.todoHeading}>Completed Todos</Text>
+              )}
+
+              {completedTodos?.map((todo: ITodo) => (
+                <Pressable key={todo?._id} style={styles.todoButton}>
+                  <View style={styles.todoItem}>
+                    <Entypo name="circle" size={18} color="black" />
+                    <Text style={styles.todoText}>{todo?.title}</Text>
+                    <Feather name="flag" size={20} color="black" />
+                  </View>
+                </Pressable>
+              ))}
+            </View>
           ) : (
             // Add todo
             <View style={styles.todo_add}>
@@ -199,19 +281,47 @@ const index = () => {
                 placeholder="Enter your todo"
                 onChangeText={(text) => setTodo(text)}
                 style={styles.modalInput}
+                value={todo}
               />
-              <Ionicons name="send" size={24} color="#007FFF" onPress={() => addTodo()}/>
+              <Ionicons
+                name="send"
+                size={24}
+                color="#007FFF"
+                onPress={() => addTodo()}
+              />
             </View>
             <View>
               <Text>Choose Category</Text>
               <View style={styles.modalCatContainer}>
-                <Pressable style={styles.modalCategory} onPress={() => setCategory("work")}>
+                <Pressable
+                  style={[
+                    styles.modalCategory,
+                    category === "work" ? { backgroundColor: "#0fff00" } : {},
+                  ]}
+                  onPress={() => setCategory("work")}
+                >
                   <Text style={styles.modalCatText}>Work</Text>
                 </Pressable>
-                <Pressable style={styles.modalCategory} onPress={() => setCategory("personal")}>
+                <Pressable
+                  style={[
+                    styles.modalCategory,
+                    category === "personal"
+                      ? { backgroundColor: "#0fff00" }
+                      : {},
+                  ]}
+                  onPress={() => setCategory("personal")}
+                >
                   <Text style={styles.modalCatText}>Personal</Text>
                 </Pressable>
-                <Pressable style={styles.modalCategory} onPress={() => setCategory("wishlist")}>
+                <Pressable
+                  style={[
+                    styles.modalCategory,
+                    category === "wishlist"
+                      ? { backgroundColor: "#0fff00" }
+                      : {},
+                  ]}
+                  onPress={() => setCategory("wishlist")}
+                >
                   <Text style={styles.modalCatText}>Wishlist</Text>
                 </Pressable>
               </View>
@@ -219,8 +329,14 @@ const index = () => {
               <Text>Some Suggestions</Text>
               <View style={styles.modalSuggestionsContainer}>
                 {todoSuggestions?.map((suggestion) => (
-                  <Pressable style={styles.modalSuggestions} key={suggestion.id}>
-                    <Text style={{textAlign : "center"}}>{suggestion?.title}</Text>
+                  <Pressable
+                    style={styles.modalSuggestions}
+                    key={suggestion.id}
+                    onPress={() => setTodo(suggestion.title)}
+                  >
+                    <Text style={{ textAlign: "center" }}>
+                      {suggestion?.title}
+                    </Text>
                   </Pressable>
                 ))}
               </View>
@@ -323,17 +439,39 @@ const styles = StyleSheet.create({
   modalCatText: {
     fontSize: 14,
   },
-  modalSuggestionsContainer : {
-    flexDirection : "row",
-    alignItems : 'center',
-    flexWrap :'wrap',
-    gap :10,
-    marginVertical : 15
+  modalSuggestionsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 10,
+    marginVertical: 15,
   },
   modalSuggestions: {
-    backgroundColor : "#F0F8FF",
-    paddingHorizontal : 10,
-    paddingVertical : 4,
-    borderRadius : 25,
+    backgroundColor: "#F0F8FF",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 25,
+  },
+
+  todoHeading: {
+    margin: 15,
+    fontSize: 16,
+    fontWeight: 600,
+  },
+
+  todoButton: {
+    padding: 10,
+    marginVertical: 10,
+    borderRadius: 7,
+    backgroundColor: "#E0E0E0",
+  },
+
+  todoItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  todoText: {
+    flex: 1,
   },
 });
