@@ -19,12 +19,13 @@ import {
   ModalTitle,
   SlideAnimation,
 } from "react-native-modals";
-import { Ionicons } from "@expo/vector-icons";
+import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import { API_URL } from "@/config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Entypo from "@expo/vector-icons/Entypo";
 import Feather from "@expo/vector-icons/Feather";
+import { MaterialIcons } from "@expo/vector-icons";
 import { ITodo } from "@/interfaces";
 
 const index = () => {
@@ -35,9 +36,9 @@ const index = () => {
   const [todos, setTodos] = useState([]);
   const [pendingTodos, setPendingTodos] = useState([]);
   const [completedTodos, setCompletedTodos] = useState([]);
-  const [marked, setMarked] = useState<boolean>(false);
+  const [type, setType] = useState<string>("all");
 
-  const today = new Date().toDateString();
+  const today = new Date().toDateString(); // Sun Nov 24 2024
 
   const fetchUserDetails = async () => {
     const token = await AsyncStorage.getItem("authToken");
@@ -114,6 +115,7 @@ const index = () => {
 
       Alert.alert("Success", "Todo added successfully.");
       setModalOpen(false);
+      await getUserTods();
       setTodo("");
     } catch (error: any) {
       console.log("Error in adding TODO :: ", error);
@@ -127,7 +129,7 @@ const index = () => {
   const getUserTods = async () => {
     try {
       const { token, user } = await fetchUserDetails();
-      const todo_url = `${API_URL}/todos/${user._id}`;
+      const todo_url = `${API_URL}/todos/${user._id}?type=${type}`;
       const response = await axios.get(todo_url, {
         headers: {
           auth_token: token,
@@ -159,24 +161,28 @@ const index = () => {
 
   useEffect(() => {
     getUserTods();
-  }, []);
+  }, [type]);
 
   const handleCompleteTodo = async (todoId: string) => {
-    const { token, user } = await fetchUserDetails();
+    try {
+      const { token, user } = await fetchUserDetails();
 
-    setMarked(true);
-    const response = await axios.patch(
-      `${API_URL}/todos/${user._id}/${todoId}`,
-      "",
-      {
-        headers: {
-          AUTH_TOKEN: token,
-        },
+      const response = await axios.patch(
+        `${API_URL}/todos/${user._id}/${todoId}`,
+        "",
+        {
+          headers: {
+            AUTH_TOKEN: token,
+          },
+        }
+      );
+
+      if (response?.status === 200) {
+        Alert.alert("Todo Marked as completed");
+        await getUserTods();
       }
-    );
-
-    if (response?.status === 200) {
-      Alert.alert("Todo Marked as completed");
+    } catch (error: any) {
+      console.log(`Error in marking todo as completed :: `, error?.message);
     }
   };
 
@@ -185,16 +191,19 @@ const index = () => {
       {/* Buttons : filter and add */}
       <GestureHandlerRootView>
         <View style={styles.container}>
-          <Pressable style={[styles.btn, styles.bg_blue]}>
+          <Pressable onPress={() => setType("all")} style={[styles.btn, styles.bg_blue]}>
             <Text style={styles.text}>All</Text>
           </Pressable>
-          <Pressable style={[styles.btn, styles.bg_red]}>
+          <Pressable onPress={() => setType("work")} style={[styles.btn, styles.bg_red]}>
             <Text style={styles.text}>Work</Text>
           </Pressable>
-          <Pressable
-            style={[styles.btn, styles.bg_green, { marginRight: "auto" }]}
+          <Pressable onPress={() => setType("personal")}
+            style={[styles.btn, styles.bg_green]}
           >
             <Text style={styles.text}>Personal</Text>
+          </Pressable>
+          <Pressable onPress={() => setType("wishlist")} style={[styles.btn,   { marginRight: "auto" ,backgroundColor : "#00aa00"}]}>
+            <Text style={styles.text}>Wishlist</Text>
           </Pressable>
           {/* add button */}
           <Pressable style={[styles.btn]}>
@@ -210,7 +219,7 @@ const index = () => {
         {/* Scroll View : Todo Scrolling */}
         <ScrollView style={styles.todo_container}>
           {todos?.length > 0 ? (
-            <View>
+            <View style={{marginHorizontal : 10}}>
               {pendingTodos?.length > 0 && (
                 <Text style={styles.todoHeading}>Tasks To Do {today}</Text>
               )}
@@ -218,7 +227,12 @@ const index = () => {
               {pendingTodos?.map((todo: ITodo) => (
                 <Pressable key={todo?._id} style={styles.todoButton}>
                   <View style={styles.todoItem}>
-                    <Entypo name="circle" size={18} color="black" />
+                    <Entypo
+                      name="circle"
+                      size={18}
+                      color="black"
+                      onPress={() => handleCompleteTodo(todo._id)}
+                    />
                     <Text style={styles.todoText}>{todo?.title}</Text>
                     <Feather name="flag" size={20} color="black" />
                   </View>
@@ -226,18 +240,35 @@ const index = () => {
               ))}
 
               {completedTodos?.length > 0 && (
-                <Text style={styles.todoHeading}>Completed Todos</Text>
-              )}
-
-              {completedTodos?.map((todo: ITodo) => (
-                <Pressable key={todo?._id} style={styles.todoButton}>
-                  <View style={styles.todoItem}>
-                    <Entypo name="circle" size={18} color="black" />
-                    <Text style={styles.todoText}>{todo?.title}</Text>
-                    <Feather name="flag" size={20} color="black" />
+                <View>
+                  <View style={styles.completedItem}>
+                    <Image
+                      style={{ width: 100, height: 100 }}
+                      source={{
+                        uri: "https://cdn-icons-png.flaticon.com/128/6784/6784655.png",
+                      }}
+                    />
                   </View>
-                </Pressable>
-              ))}
+                  <View style={styles.todoItem}>
+                    <Text style={styles.todoText}>Completed Tasks</Text>
+                    <MaterialIcons
+                      name="arrow-drop-down"
+                      size={24}
+                      color="black"
+                    />
+                  </View>
+
+                  {completedTodos?.map((todo: ITodo) => (
+                    <Pressable key={todo?._id} style={styles.todoButton}>
+                      <View style={styles.todoItem}>
+                        <FontAwesome name="circle" size={18} color="green" />
+                        <Text style={styles.completedText}>{todo?.title}</Text>
+                        <Feather name="flag" size={20} color="grey" />
+                      </View>
+                    </Pressable>
+                  ))}
+                </View>
+              )}
             </View>
           ) : (
             // Add todo
@@ -296,7 +327,7 @@ const index = () => {
                 <Pressable
                   style={[
                     styles.modalCategory,
-                    category === "work" ? { backgroundColor: "#0fff00" } : {},
+                    category === "work" ? { backgroundColor: "#00cc00" } : {},
                   ]}
                   onPress={() => setCategory("work")}
                 >
@@ -306,7 +337,7 @@ const index = () => {
                   style={[
                     styles.modalCategory,
                     category === "personal"
-                      ? { backgroundColor: "#0fff00" }
+                      ? { backgroundColor: "#00cc00" }
                       : {},
                   ]}
                   onPress={() => setCategory("personal")}
@@ -317,7 +348,7 @@ const index = () => {
                   style={[
                     styles.modalCategory,
                     category === "wishlist"
-                      ? { backgroundColor: "#0fff00" }
+                      ? { backgroundColor: "#00cc00" }
                       : {},
                   ]}
                   onPress={() => setCategory("wishlist")}
@@ -461,17 +492,34 @@ const styles = StyleSheet.create({
 
   todoButton: {
     padding: 10,
-    marginVertical: 10,
+    marginVertical: 6,
     borderRadius: 7,
-    backgroundColor: "#E0E0E0",
+    backgroundColor: "#eef4ff",
   },
 
   todoItem: {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
+    marginVertical: 10,
   },
   todoText: {
     flex: 1,
+    fontSize: 18,
+    marginLeft : 5,
+    fontWeight : "600"
+   },
+
+  completedItem: {
+    justifyContent: "center",
+    alignItems: "center",
+    margin: 10,
+  },
+
+  completedText: {
+    flex: 1,
+    textDecorationLine: "line-through",
+    color: "grey",
+    fontSize: 18,
   },
 });

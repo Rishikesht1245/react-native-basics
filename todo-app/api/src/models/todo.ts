@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { ITodo } from "../interface";
 
 const todoSchema = new mongoose.Schema<ITodo>(
@@ -20,7 +20,7 @@ const todoSchema = new mongoose.Schema<ITodo>(
       dueDate : {
         type : String,
         required : true
-      }
+      },
     },
     { timestamps: true }
   );
