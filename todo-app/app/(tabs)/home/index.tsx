@@ -27,6 +27,8 @@ import Entypo from "@expo/vector-icons/Entypo";
 import Feather from "@expo/vector-icons/Feather";
 import { MaterialIcons } from "@expo/vector-icons";
 import { ITodo } from "@/interfaces";
+import { fetchUserDetails } from "@/helpers/todo";
+import { Href, useRouter } from "expo-router";
 
 const index = () => {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
@@ -40,13 +42,10 @@ const index = () => {
 
   const today = new Date().toDateString(); // Sun Nov 24 2024
 
-  const fetchUserDetails = async () => {
-    const token = await AsyncStorage.getItem("authToken");
-    const uservalue = await AsyncStorage.getItem("user");
-    const user = uservalue != null ? JSON.parse(uservalue) : null;
 
-    return { token, user };
-  };
+const router = useRouter();
+
+
 
   const todoSuggestions = [
     {
@@ -186,6 +185,19 @@ const index = () => {
     }
   };
 
+  const handleTodoPress = (todo : ITodo) => {
+    router?.push({
+      pathname :"/home/info" as any,
+      params : {
+        id : todo?._id,
+        title : todo?.title,
+        category : todo?.category,
+        createdAt : todo?.createdAt,
+        dueDate : todo?.dueDate
+      }
+    })
+  }
+
   return (
     <>
       {/* Buttons : filter and add */}
@@ -225,7 +237,7 @@ const index = () => {
               )}
 
               {pendingTodos?.map((todo: ITodo) => (
-                <Pressable key={todo?._id} style={styles.todoButton}>
+                <Pressable onPress={() => handleTodoPress(todo)} key={todo?._id} style={styles.todoButton}>
                   <View style={styles.todoItem}>
                     <Entypo
                       name="circle"

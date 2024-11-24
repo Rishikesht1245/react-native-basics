@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response, Router } from "express";
 import jwt from "jsonwebtoken";
-import { addTodo, completeTodo, fetchTodos } from "../controllers/todo";
+import { addTodo, completeTodo, fetchStatistics, fetchTodos } from "../controllers/todo";
 
 const todoRouter = Router();
 
@@ -10,6 +10,8 @@ todoRouter
   .get(isAuth, fetchTodos)
   
 todoRouter.patch("/:userId/:todoId", isAuth, completeTodo);
+
+todoRouter.get("/:userId/stats", isAuth, fetchStatistics)
 
 function isAuth(req: Request, res: Response, next: NextFunction): void {
   const token = req.headers["auth_token"];

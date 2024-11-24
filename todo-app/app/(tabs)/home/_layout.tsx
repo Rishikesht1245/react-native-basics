@@ -7,6 +7,7 @@ export default function Layout() {
       {/* // This will display the name as header */}
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
+        <Stack.Screen name="home/info" />
       </Stack>
       <ModalPortal/>
     </>

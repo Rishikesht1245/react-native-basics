@@ -15,19 +15,12 @@ import axios from "axios";
 import { ITodo } from "@/interfaces";
 import { Feather, FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { fetchUserDetails } from "@/helpers/todo";
 
 const index = () => {
   const today = new Date().toLocaleDateString("en-CA");
   const [selectedDate, setSelectedDate] = useState<string>(today);
   const [todos, setTodos] = useState([]);
-
-  const fetchUserDetails = async () => {
-    const token = await AsyncStorage.getItem("authToken");
-    const uservalue = await AsyncStorage.getItem("user");
-    const user = uservalue != null ? JSON.parse(uservalue) : null;
-
-    return { token, user };
-  };
 
   const getUserTods = async () => {
     try {

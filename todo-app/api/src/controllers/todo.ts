@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import Todos from "../models/todo";
 import Users from "../models/user";
+import { ITodo } from "src/interface";
+import mongoose from "mongoose";
 
 export const addTodo = async (
   req: Request,
@@ -8,7 +10,11 @@ export const addTodo = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { title, category, dueDate = new Date(new Date().getDate() + 1) } = req.body;
+    const {
+      title,
+      category,
+      dueDate = new Date(new Date().getDate() + 1),
+    } = req.body;
     const { userId } = req.params;
 
     if (!title || !category || !userId) {
@@ -38,7 +44,9 @@ export const addTodo = async (
       return;
     }
 
-    user?.todos.push(newTodo._id!);
+    (user?.todos as mongoose.Types.ObjectId[]).push(
+      newTodo._id as mongoose.Types.ObjectId
+    );
     await user?.save();
 
     res.status(201).json({ message: "Todo Created successfully" });
@@ -55,26 +63,32 @@ export const fetchTodos = async (
 ): Promise<void> => {
   try {
     const userId = req.params.userId;
-    const {type, date, status} = req.query
+    const { type, date, status } = req.query;
 
-    const populateOptions : {path : string, match ?: any} = {path : "todos"}
-    if(date){
-      console.log({date})
+    const populateOptions: { path: string; match?: any } = { path: "todos" };
+    if (date) {
+      console.log({ date });
       const inputDate = new Date(date as string).toLocaleDateString("en-Ca");
       const startDate = `${inputDate}T00:00:00.000Z`;
       const endDate = `${inputDate}T23:59:59.999Z`;
-      populateOptions.match = {createdAt : {$gte : startDate, $lte : endDate}}
+      populateOptions.match = { createdAt: { $gte: startDate, $lte: endDate } };
     }
 
-    if(type && type !== "all"){
-      populateOptions.match = {...populateOptions.match, category : {$in : [type]}}
+    if (type && type !== "all") {
+      populateOptions.match = {
+        ...populateOptions.match,
+        category: { $in: [type] },
+      };
     }
 
-    if(status === "completed"){
-      populateOptions.match = {...populateOptions.match, status : {$eq : "completed"}}
+    if (status === "completed") {
+      populateOptions.match = {
+        ...populateOptions.match,
+        status: { $eq: "completed" },
+      };
     }
 
-    console.log(populateOptions)
+    console.log(populateOptions);
 
     if (!userId || !validateUserId(req, userId)) {
       res
@@ -91,7 +105,7 @@ export const fetchTodos = async (
     }
 
     res.status(200).json({ todos: user.todos });
-  } catch (error : any) {
+  } catch (error: any) {
     console.log("Error in fetching todos :: ", error?.message);
     res.status(500).json({ error: "Something went wrong" });
   }
@@ -119,16 +133,51 @@ export const completeTodo = async (
       { new: true }
     );
 
-    if(!updatedTodo){
-      res.status(404).json({error : "Todo not found"});
+    if (!updatedTodo) {
+      res.status(404).json({ error: "Todo not found" });
       return;
     }
 
-    res.status(200).json({message : "Todo Marked as completed",todo : updatedTodo});
+    res
+      .status(200)
+      .json({ message: "Todo Marked as completed", todo: updatedTodo });
   } catch (error) {
     console.log("Error in completing todos :: ", error);
     res.status(500).json({ error: "Something went wrong" });
   }
+};
+
+export const fetchStatistics = async (req: Request, res: Response) => {
+  const { userId } = req.params;
+
+  if (!userId || !validateUserId(req, userId)) {
+    res
+      .status(401)
+      .json({ error: "Not authorized to add todo under this account" });
+    return;
+  }
+
+  const user = await Users.findById(userId).populate({
+    path: "todos",
+  });
+
+  const todos = user?.todos as ITodo[];
+
+  const completedCount = todos.filter(
+    (todo) => todo?.status === "completed"
+  ).length;
+  const pendingCount = todos.filter(
+    (todo) => todo?.status === "pending"
+  ).length;
+
+  console.log({ completedCount, pendingCount });
+  const statistics = {
+    completedCount,
+    pendingCount,
+  }
+  res
+      .status(200)
+      .json({ message: "Todo Marked as completed", statistics });
 };
 
 function validateUserId(req: Request, userId: string): boolean {
